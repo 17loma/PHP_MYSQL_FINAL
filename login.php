@@ -1,5 +1,7 @@
 <?php
 session_start();
+session_regenerate_id(true);
+
 $servername = "localhost";
 $username = "root";
 $password = "root";
@@ -13,31 +15,21 @@ if (!$conn) {
 $mensaje = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $dni = $_POST['dni'];
+    $dni = mysqli_real_escape_string($conn, $_POST['dni']);
     $password = $_POST['password'];
 
-    // Buscar el usuario en la base de datos
     $sql = "SELECT * FROM usuarios WHERE dni='$dni'";
     $resultado = mysqli_query($conn, $sql);
 
     if ($resultado && mysqli_num_rows($resultado) > 0) {
         $usuario = mysqli_fetch_assoc($resultado);
 
-        // Comprobación de contraseña sin encriptación (si usas `password_hash`, cambia esta parte)
-        if ($password == $usuario['password']) {
-            // Iniciar sesión
+        if ($password == $usuario['password']) { 
             $_SESSION['id_usuario'] = $usuario['id_usuario'];
             $_SESSION['tipo_usuario'] = $usuario['tipo_usuario'];
             $_SESSION['nombre'] = $usuario['nombre'];
 
-            // Redirigir según el tipo de usuario
-            if ($usuario['tipo_usuario'] == "comprador") {
-                header("Location: ./coches/buscar.php");
-            } elseif ($usuario['tipo_usuario'] == "vendedor") {
-                header("Location: ./index.php");
-            } elseif ($usuario['tipo_usuario'] == "admin") {
-                header("Location: ./index.php");
-            }
+            header("Location: ./coches/buscar.php");
             exit();
         } else {
             $mensaje = "Contraseña incorrecta.";
